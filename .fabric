@@ -1,0 +1,10 @@
+{
+    "build": {
+        "command": "go",
+        "args": [
+            "build",
+            "-ldflags",
+            "-s -w -X main.VERSION=0.0.0.1"
+        ]
+    }
+}
