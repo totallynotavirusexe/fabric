@@ -4,7 +4,7 @@
         "args": [
             "build",
             "-ldflags",
-            "-s -w -X main.VERSION=0.0.0.1"
+            "-s -w -X main.VERSION=0.0.2"
         ]
     }
 }

@@ -1,0 +1,65 @@
+#+TITLE: Fabric 0.0.2
+
+Fabric is an oc-tool to build different project writen in different languages without having to remember all sort of commands and their required arguments.
+
+Figure it out once, put it in a file and forget about it!
+
+* Setting up a Fabric project
+
+Simply open/create any project in any language.
+Lets for this example assume you are writing a basic golang program/script.
+
+Create a .fabric file (json format).
+
+The current version only supports basic build info, create the ~build~ object:
+
+#+begin_src json
+{
+"build" : {}
+}
+#+end_src
+
+To actually specify what needs to be done we need a ~command~ and optionally ~args~ to that command.
+
+For our example that might look like this:
+
+#+begin_src json
+{
+    "build": {
+        "command": "go",
+        "args": [
+            "build",
+            "-ldflags",
+            "-s -w"
+        ]
+    }
+}
+#+end_src
+Now our Fabric project is all set up and ready to GO
+
+* Building the Fabric project
+
+building the fabric project is as simple as running ~fabric~ in the project directory.
+
+*NOTE:* this /might/ change in the future to ~fabric build~ in an effort to implement ~fabric clean~ and maybe other utilities.
+
+* Stuff thats left TODO
+
+** Cleanup
+
+Currently still missing a way to clean the build files.
+this could be for example ~fabric clean~ or having an configurable auto-clean for each build
+
+/(with some pyinstaller projects you might want to delete the built files everytime you run/ ~fabric~ /)/
+
+** Moving build output around
+
+ A way to extract build sources may be useful to have similar outputs across projects, for example:
+ - GO projects create a binary in the dir the command is ran ~./my-bin~
+ - Python projects create ~./dist/my-project/my-bin~ asuming you use ~--one-file~ with pyinstaller
+ - A C# project may create ~./bin/Debug/my-bin~ and/or ~./bin/Release/my-bin~
+
+many other variations (probably) exist and you might want to configure fabric to copy file(s) from X to Y (and perhaps clean up afterwards?)
+
+This is especially useful for automated pipelines with different languages.
+You could have a generic function that calls ~fabric~  and moves the artifact(s) to ~./cicd-output/~ ready to be uploaded.

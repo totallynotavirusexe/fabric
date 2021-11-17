@@ -7,6 +7,9 @@ import (
     "time"
     "errors"
     "encoding/json"
+    "strings"
+
+    "github.com/fatih/color"
 )
 
 var VERSION string
@@ -28,7 +31,7 @@ func isFabric() bool {
     if errors.Is(err, os.ErrNotExist) {
         return false
     }
-    fmt.Println("WARNING: '.fabric' is a quantum file that exists and doesn't exist simultaneously")
+    fmt.Printf("%s: '.fabric' is a quantum file that exists and doesn't exist simultaneously\r\n", color.YellowString("WARNING"))
     return false
 }
 
@@ -39,68 +42,59 @@ func printVersion() {
         VERSION = fmt.Sprintf("dev-%s", time.Now().Format(YYYYMMDDhhmmss))
         dev = true
     }
-    fmt.Printf("fabric %s\r\n", VERSION)
+    fmt.Printf("Fabric %s\r\n", VERSION)
     if (dev){
-        fmt.Println("WARNING: running dev version of Fabric")
+        fmt.Printf("%s: running dev version of Fabric\r\n", color.YellowString("WARNING"))
         fmt.Println("         fabric may be compiled without version info")
     }
 }
 
 func readFabric() (Fabric, bool) {
     data, err := os.ReadFile("./.fabric")
-    fabric := Fabric{}
     var _fabric Fabric
     if err != nil {
-        return fabric, false
+        return _fabric, false
     }
     err = json.Unmarshal(data, &_fabric)
     if err != nil {
-        return fabric, false
+        return _fabric, false
     }
     return _fabric, true
 }
 
-func debugFabric(fabric Fabric, status bool) {
-    fmt.Printf("fabric.build.command: %s\r\n", fabric.Build.Command)
-    switch numArgs := len(fabric.Build.Args); numArgs {
-    case 0:
-    default:
-        fmt.Printf("fabric.build.args: %s\r\n", fabric.Build.Args[0])
-        for index := range fabric.Build.Args {
-            if index != 0 {
-                fmt.Printf("                   %s\r\n", fabric.Build.Args[index])
-            }
-        }
-    }
-    fmt.Println("")
-}
-
-func buildFabricProject(fabric Fabric) int {
-    out, err := exec.Command(fabric.Build.Command, fabric.Build.Args...).CombinedOutput()
+func buildFabricProject(fabric Fabric) bool {
+    cmd := exec.Command(fabric.Build.Command, fabric.Build.Args...)
+    cmd.Stderr = os.Stderr
+    cmd.Stdout = os.Stdout
+    cmd.Stdin = os.Stdin
+    err := cmd.Run()
     if err != nil {
-        fmt.Println("Error running fabric instructions");
-        fmt.Println(err)
-        return 1
+        fmt.Printf("%s: %v\r\n", color.RedString("ERROR"), err)
+        return false
     }
-    if len(out) > 0 {
-        fmt.Println(out)
-    }
-    fmt.Println("done.")
-    return 0
+    return true
 }
 
 func main() {
     printVersion()
 
     if !isFabric() {
-        fmt.Println("ERROR: Current directory is not a fabric project")
+        fmt.Printf("%s: Current directory is not a fabric project\r\n", color.RedString("ERROR"))
         os.Exit(1)
     }
     fabric, status := readFabric()
     if !status {
-        fmt.Println("ERROR: Cannot read or parse ./.fabric")
+        fmt.Printf("%s: Cannot read or parse ./.fabric\r\n", color.RedString("ERROR"))
         os.Exit(1)
     }
-    //debugFabric(fabric, status)
-    os.Exit(buildFabricProject(fabric))
+
+    switch status := buildFabricProject(fabric); status {
+    case true:
+        fmt.Println("Fabricated project into reality!")
+        os.Exit(0)
+    case false:
+        fmt.Printf("%s: Could not fabricate project into reality\r\n", color.RedString("ERROR"))
+        fmt.Printf("       Ran %s %s\r\n", fabric.Build.Command, strings.Join(fabric.Build.Args, " "))
+        os.Exit(1)
+    }
 }
