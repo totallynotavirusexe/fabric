@@ -1,4 +1,4 @@
-#+TITLE: Fabric 0.0.2
+#+TITLE: Fabric 0.0.3
 
 Fabric is an oc-tool to build different project writen in different languages without having to remember all sort of commands and their required arguments.
 
@@ -11,17 +11,19 @@ Lets for this example assume you are writing a basic golang program/script.
 
 Create a .fabric file (json format).
 
-The current version only supports basic build info, create the ~build~ object:
+The current version only supports basic info, create any/all of the following fields ~build~, ~install~, ~clean~:
 
 #+begin_src json
 {
-"build" : {}
+"build" : {},
+"install": {},
+"clean": {}
 }
 #+end_src
 
-To actually specify what needs to be done we need a ~command~ and optionally ~args~ to that command.
+To actually specify what needs to be done in one of these fields/objects we need a ~command~ and optionally ~args~ to that command.
 
-For our example that might look like this:
+For our example we will only implement ~build~ and that might look like this:
 
 #+begin_src json
 {
@@ -35,22 +37,17 @@ For our example that might look like this:
     }
 }
 #+end_src
-Now our Fabric project is all set up and ready to GO
+Now our Fabric project is all set up and ready to GO.
+
+for a full example see this project's ~.fabric~ file.
 
 * Building the Fabric project
 
-building the fabric project is as simple as running ~fabric~ in the project directory.
+building the fabric project is as simple as running ~fabric build~ in the project directory.
 
-*NOTE:* this /might/ change in the future to ~fabric build~ in an effort to implement ~fabric clean~ and maybe other utilities.
+run ~fabric help~ for more commands
 
 * Stuff thats left TODO
-
-** Cleanup
-
-Currently still missing a way to clean the build files.
-this could be for example ~fabric clean~ or having an configurable auto-clean for each build
-
-/(with some pyinstaller projects you might want to delete the built files everytime you run/ ~fabric~ /)/
 
 ** Moving build output around
 
@@ -63,3 +60,12 @@ many other variations (probably) exist and you might want to configure fabric to
 
 This is especially useful for automated pipelines with different languages.
 You could have a generic function that calls ~fabric~  and moves the artifact(s) to ~./cicd-output/~ ready to be uploaded.
+
+** Working with variables
+
+With the addition of ~fabric install~ some build values are now duplicated and need to be updated on multiple places in the config file
+Would be great to have a ~vars~ section and the posibility to use the vars in build/install/clean steps
+
+** Auto clean
+
+auto cleaning for special cases
